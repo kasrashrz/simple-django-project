@@ -4,26 +4,26 @@ services:
   mysql_container:
     image: mysql:8.0
     restart: always
-    command: --default-authentication-plugin=mysql_native_password
+#    command: --default-authentication-plugin=mysql_native_password
     container_name: mysql_container
     environment:
-      MYSQL_ROOT_PASSWORD: 'root'
+     MYSQL_DATABASE: 'world'
+     MYSQL_ROOT_PASSWORD: 'root'
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
       - /home/kasra/codebase/world.sql:/world.sql
       - /home/kasra/codebase/mysql_entrypoint.sh:/mysql_entrypoint.sh
-      
-#   networks:
-#      - mynetwork
+    networks:
+      - mynetwork
     entrypoint: /mysql_entrypoint.sh
 
   # Django application service
   django_container:
     image: simple_django:1.0.6
     build:
-      context: . 
+      context: .
     container_name: simple-django
     command: >
      sh -c "
@@ -34,20 +34,20 @@ services:
      /app/venv/bin/python manage.py migrate &&
      /app/venv/bin/python manage.py rebuild_index &&
      /app/venv/bin/python manage.py runserver 0:8001"
-      
+
     volumes:
       - /home/kasra/codebase/entrypoint.sh:/app/entrypoint.sh
     depends_on:
       - mysql_container
     ports:
       - "8001:8001"
-#    networks:
-#      - mynetwork
+    networks:
+      - mynetwork
     volumes:
       - ./:/app  # Mount your Django app code
 
-#networks:
-#  mynetwork:
+networks:
+  mynetwork:
 
 volumes:
   db_data:
